@@ -63,6 +63,30 @@ rantRoute.get(function(req, res) {
   });
 });
 
+// Create endpoint /api/rants/:rant_id for PUT
+rantRoute.put(function(req, res) {
+  Rant.findById(req.params.rant_id, function(err, rant) {
+    if (err)
+      res.send(err);
+    rant.title = req.body.title;
+    rant.body = req.body.body;
+    rant.save(function(err) {
+      if (err)
+        res.send(err);
+      res.json(rant);
+    });
+  });
+});
+
+// Create endpoint /api/rants/:rant_id for DELETE
+rantRoute.delete(function(req, res) {
+  Rant.findByIdAndRemove(req.params.rant_id, function(err) {
+    if (err)
+      res.send(err);
+    res.json({ message: 'Rant successfully removed' });
+  });
+});
+
 app.use('/api', router);
 
 app.listen(port);
