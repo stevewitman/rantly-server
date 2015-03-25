@@ -1,93 +1,36 @@
-// Get packages
 var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
-var Rant = require('./models/rant');
+var userController = require('./controllers/user');
+var rantController = require('./controllers/rant');
 
-// Connect to MongoDB
+
 mongoose.connect('mongodb://localhost:27017/rantly');
 
-// Create Express app
 var app = express();
 
-// Use the body-parser package in our application
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-// Use environment defined port or 3000
-var port = process.env.PORT || 3000;
-
-// Create Express router
 var router = express.Router();
 
-// test route for testing
-// http://localhost:3000/api
-router.get('/', function(req, res) {
-  res.json({ message: 'TEST MESSAGE' });
-});
+// Create endpoint handlers for /users
+router.route('/users')
+  .post(userController.postUsers)
+  .get(userController.getUsers);
 
-// Create a new route
-var rantsRoute = router.route('/rants');
+// Create endpoint handlers for /rants
+router.route('/rants')
+  .post(rantController.postRants)
+  .get(rantController.getRants);
 
-// Create endpoint /api/rants for POSTS
-rantsRoute.post(function(req, res) {
-  var rant = new Rant();
-  rant.title = req.body.title;
-  rant.body = req.body.body;
-  rant.save(function(err) {
-    if (err)
-      res.send(err);
-    res.json({ message: 'Rant Successfully Added', data: rant });
-  });
-});
-
-// Create endpoint /api/rants for GET
-rantsRoute.get(function(req, res) {
-  Rant.find(function(err, rants) {
-    if (err)
-      res.send(err);
-    res.json(rants);
-  });
-});
-
-// Create a route with the /rants/:rant_id prefix
-var rantRoute = router.route('/rants/:rant_id');
-
-// Create endpoint /api/rants/:rant_id for GET
-rantRoute.get(function(req, res) {
-  Rant.findById(req.params.rant_id, function(err, rant) {
-    if (err)
-      res.send(err);
-    res.json(rant);
-  });
-});
-
-// Create endpoint /api/rants/:rant_id for PUT
-rantRoute.put(function(req, res) {
-  Rant.findById(req.params.rant_id, function(err, rant) {
-    if (err)
-      res.send(err);
-    rant.title = req.body.title;
-    rant.body = req.body.body;
-    rant.save(function(err) {
-      if (err)
-        res.send(err);
-      res.json(rant);
-    });
-  });
-});
-
-// Create endpoint /api/rants/:rant_id for DELETE
-rantRoute.delete(function(req, res) {
-  Rant.findByIdAndRemove(req.params.rant_id, function(err) {
-    if (err)
-      res.send(err);
-    res.json({ message: 'Rant successfully removed' });
-  });
-});
+// Create endpoint handlers for /rants/:rant_id
+router.route('/rants/:rant_id')
+  .get(rantController.getRant)
+  .put(rantController.putRant)
+  .delete(rantController.deleteRant);
 
 app.use('/api', router);
 
-app.listen(port);
-console.log('Insert rant on port ' + port);
+app.listen(3000);
